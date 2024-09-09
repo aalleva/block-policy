@@ -1,0 +1,30 @@
+---
+apiVersion: gateway.mulesoft.com/v1alpha1
+kind: Extension
+metadata:
+  labels:
+    title: Block
+    description: This policy periodically queries a service that returns a list of IP ranges and then blocks all requests coming from those ranges.
+    category: Custom
+    interfaceScope: api,resource
+spec:
+  extends:
+    - name: extension-definition
+      namespace: default
+  properties:
+    source:
+      type: string
+      format: service
+      description: The url of the service that returns a list of IP ranges to block.
+    frequency:
+      type: integer
+      description: How often to check the list of IP ranges (in seconds).
+    ip:
+      type: string
+      format: dataweave
+      description: Dataweave extression that extracts the IP address from the request.
+      default: "#[attributes.headers['ip']]"
+  required:
+    - source
+    - frequency
+    - ip
