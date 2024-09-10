@@ -23,4 +23,3 @@ spec:
       config:
         source: https://block-ips-ldb70c.cio5fo.usa-e1.cloudhub.io/ips
         frequency: 60
-        ip: "#[attributes.headers['x-forwarded-for']]"

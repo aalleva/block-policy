@@ -41,9 +41,10 @@ struct BlockedIPs {
 impl BlockedIPs {
     /// Update the ip ranges to be blocked
     pub fn update(&self, update_time: SystemTime, ips: &str) {
+
         let ip_range: IpRange<Ipv4Net> = ips
-            .split("\n")
-            .into_iter()
+            .lines()
+            //.into_iter()
             .filter_map(|s| s.parse().ok())
             .collect();
 
@@ -53,6 +54,7 @@ impl BlockedIPs {
 
     /// Inquires if the specified ip is in one of the forbidden ranges.
     pub fn allowed(&self, ip: &str) -> bool {
+
         self.update.borrow().is_some()
             && ip
                 .parse::<Ipv4Addr>()
@@ -90,16 +92,11 @@ async fn fetch_blocked_ips(config: &Config, client: &HttpClient, cache: &impl Ca
     // Acquire the lock to ensure only one worker is hitting the backend at a time
     if let Some(aquire) = lock.try_lock() {
 
-        logger::debug!("Fetching the blocked ips from {:?}", &config.source);
-
         let response = client
             .request(&config.source)
             .timeout(Duration::from_secs(10))
             .get()
             .await?;
-
-        // log response content body
-        logger::debug!("Response: {}", String::from_utf8_lossy(response.body()));
 
         // If we lost the lock we discard the response.
         if !aquire.refresh_lock() {
@@ -110,9 +107,6 @@ async fn fetch_blocked_ips(config: &Config, client: &HttpClient, cache: &impl Ca
         if response.status_code() == 200 {
             cache.save(LAST_UPDATE, serde_json::to_vec(&now)?)?;
             cache.save(DATA_KEY, response.body().as_bytes())?;
-
-            logger::debug!("Blocked IPs updated successfully");
-            logger::debug!("Cache content for key DATA_KEY: {}", String::from_utf8_lossy(cache.get(DATA_KEY).unwrap().as_slice()));
 
         } else {
             return Err(anyhow!("{} - {}",
@@ -134,9 +128,6 @@ fn load_ips_from_cache(cache: &impl Cache, blocked_ips: &BlockedIPs) {
             .map(|last| last.ne(&update))
             .unwrap_or(true)
         {
-            // Load the data from the cache.
-            logger::debug!("Loading blocked ips from cache: {}", String::from_utf8_lossy(cache.get(DATA_KEY).unwrap().as_slice()));
-
             if let Some(data) = cache.get(DATA_KEY) {
                 blocked_ips.update(update, String::from_utf8_lossy(data.as_slice()).as_ref());
             }
@@ -159,8 +150,6 @@ async fn fetch_loop(
             logger::warn!("Unexpected error while fetching the ips. Cause: {}", err);
         }
 
-        // Load the ip ranges from the cache to the worker memory.
-        logger::debug!("Loading blocked ips from cache");
         load_ips_from_cache(cache, blocked_ips);
     }
 }
@@ -180,12 +169,10 @@ async fn request_filter(request_state: RequestState, _config: &Config, propertie
         logger::debug!("Client IP: {}", ip_value);
         
         if bloqued_ips.allowed(ip_value) {
-            logger::debug!("IP {} is allowed", ip_value);
             return Flow::Continue(());
         }
     }
 
-    logger::debug!("IP is not allowed");
     Flow::Break(Response::new(403))
 
 }

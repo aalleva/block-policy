@@ -7,3 +7,5 @@ pub const POLICY_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/target/wasm32
 
 // Directory with the common configurations for tests.
 pub const COMMON_CONFIG_DIR: &str =  concat!(env!("CARGO_MANIFEST_DIR"), "/tests/common");
+
+pub const POLICY_NAME: &str = "block-policy-v1-0-impl";
