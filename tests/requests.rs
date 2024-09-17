@@ -1,5 +1,4 @@
 // Copyright 2023 Salesforce, Inc. All rights reserved.
-// Test
 
 mod common;
 
