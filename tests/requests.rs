@@ -88,17 +88,6 @@ async fn block() -> anyhow::Result<()> {
     std::thread::sleep(Duration::from_secs(3));
 
     assert_request(&flex_url.as_str(), "24.152.58.1", 200).await?;
-    //assert_request(&flex_url, "23.152.57.50", 200).await?;
-    //assert_request(&flex_url, "24.152.57.1", 403).await?;
-    //assert_request(&flex_url, "24.152.57.200", 403).await?;
-    //assert_request(&flex_url, "24.233.0.1", 200).await?;
-    //assert_request(&flex_url, "23.232.1.1", 200).await?;
-    //assert_request(&flex_url, "24.232.10.50", 403).await?;
-    //assert_request(&flex_url, "24.232.200.150", 403).await?;
-    //assert_request(&flex_url, "45.4.96.1", 200).await?;
-    //assert_request(&flex_url, "46.4.92.50", 200).await?;
-    //assert_request(&flex_url, "45.4.93.10", 403).await?;
-    //assert_request(&flex_url, "45.4.95.200", 403).await?;
 
     // Was only hit by one of the workers.
     mock.assert_hits(1);
